@@ -20,10 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{83BA817F-4BF8-43FD-B43B-1034E299B571}</ProjectGuid>
-    <RootNamespace>Ex2</RootNamespace>
+    <ProjectGuid>{3C056DCB-76F9-48A3-A574-EFD7C730044E}</ProjectGuid>
+    <RootNamespace>TestGrade</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
-    <ProjectName>TestManager</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
