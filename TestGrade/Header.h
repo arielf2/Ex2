@@ -12,6 +12,10 @@
 #define ERROR_CODE ((int)(-1))
 #define SUCCESS_CODE ((int)(0))
 #define ID_LENGTH 10
+#define HIGHEST_EXERCISES_GRADE 8
+#define MOED_A 11
+#define MOED_B 12
+#define MIDTERM	10
 /*
 * A type for thread return codes
 */
@@ -28,7 +32,9 @@ typedef struct _READ_FILE_ARG {
 	char file_name[MAX_FILE_NAME_SIZE];
 } READ_FILE_ARG;
 
+HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_thread_parameters, LPDWORD p_thread_id);
 
-HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPDWORD p_thread_id);
 void read_from_file(READ_FILE_ARG* struct_arg);
 DWORD WINAPI ReadFileThread(LPVOID lpParam);
+int calc_average(int grades[]);
+int FindHighestGrades(int grades[]);

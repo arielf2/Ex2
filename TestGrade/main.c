@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 		//thread_params->file_name = files[i];
 		strcpy_s(thread_params[i]->file_name, MAX_FILE_NAME_SIZE, files[i]);
 
-		thread_handles[i] = CreateThreadSimple(ReadFileThread, &(thread_params[i]), &(array_thread_ids[i]));
+		thread_handles[i] = CreateThreadSimple(ReadFileThread, (thread_params[i]), &(array_thread_ids[i]));
 		if (thread_handles[i] == NULL)//FIX//
 		{
 			printf("Couldn't create thread, error code %d\n", GetLastError());
@@ -56,16 +56,8 @@ int main(int argc, char *argv[]) {
 		return;
 	}
 	else {
-		/*Calculate average*/
-		//add exercises value
-		for (int j = 0; j < NUM_OF_EXERCISES; j++) {
-			average += 0.02*returned_grades[j];
-		}
-		//add midterm value
-		average += 0.2*returned_grades[10];//fix
-		//add final exam value
-		average += 0.6*returned_grades[11];//fix
-
+		
+		average = calc_average(returned_grades);
 		
 	}
 
@@ -83,9 +75,7 @@ int main(int argc, char *argv[]) {
 	//return 0;
 }
 
-HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine,
-	LPVOID p_thread_parameters,
-	LPDWORD p_thread_id)
+HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_thread_parameters, LPDWORD p_thread_id)
 {
 	HANDLE thread_handle;
 	printf("CreateThreadSimple\n");
@@ -156,4 +146,65 @@ DWORD WINAPI ReadFileThread(LPVOID lpParam)
 	read_from_file(thread_params);
 
 	return MATH_THREAD__CODE_SUCCESS;
+}
+
+
+int calc_average(int grades[]) {
+	//add exercises value
+	int max_index = -1;
+	int average = 0;
+	int grades_sum = 0;
+	int highest_grades[HIGHEST_EXERCISES_GRADE] = { 0 };//
+	int exercise_average = 0;
+
+	//change grades under 60 to 0 for calculation
+	for (int i = 0; i < NUM_OF_FILES; i++) {
+		if (grades[i] < 60) {
+			grades[i] = 0;
+		}
+	}
+	//find 8 highest grades
+	for (int j = 0; j < HIGHEST_EXERCISES_GRADE; j++) {
+		max_index = FindHighestGrades(grades);
+		if (max_index == -1) {
+			printf("Error while getting highest grade\n");
+			return;
+		}
+		highest_grades[j] = grades[max_index];
+		grades[max_index] = -1;
+
+	}
+
+	//calc average of exercises
+	for (int j = 0; j < HIGHEST_EXERCISES_GRADE; j++) {
+		grades_sum += highest_grades[j];
+	}
+	exercise_average = grades_sum / HIGHEST_EXERCISES_GRADE;
+
+	//add exercises value
+	average += 0.2*exercise_average;
+
+	//add midterm value
+	average += 0.2*grades[MIDTERM];
+
+	//add final exam value
+	if (grades[MOED_B] == 0) {
+		average += 0.6*grades[MOED_A];//צריך לבדוק אם המועד א הוא 0 כדי להגיד ציון נכשל סופי?
+	}
+	else {
+		average += 0.6*grades[MOED_B];
+	}
+	return average;
+}
+
+int FindHighestGrades(int grades[]) {
+	int max = -1;
+	int max_index = -1;
+	for (int i = 0; i < NUM_OF_EXERCISES; i++) {
+		if (grades[i] > max) {
+			max = grades[i];
+			max_index = i;
+		}
+	}
+	return max_index;
 }
