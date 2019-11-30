@@ -24,11 +24,11 @@ typedef enum
 
 typedef struct _READ_FILE_ARG {
 	char id[ID_LENGTH];
-	int grade;
+	int* grade;
 	char file_name[MAX_FILE_NAME_SIZE];
 } READ_FILE_ARG;
 
 
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPDWORD p_thread_id);
-void read_from_file(char id, char file_name, int* grade);
+void read_from_file(READ_FILE_ARG* struct_arg);
 DWORD WINAPI ReadFileThread(LPVOID lpParam);
