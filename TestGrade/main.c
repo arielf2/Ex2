@@ -1,5 +1,3 @@
- 
-
 #include "Header.h"
 
 
@@ -16,7 +14,12 @@ int main(int argc, char *argv[]) {
 	DWORD wait_code;
 	int average = 0;
 	int retval;
+	int final_grade_return = -1;
+	char id[ID_LENGTH] = "";
+	DWORD process_exit_code = 0;
+	LPDWORD exit_code;
 
+	//allocate and create thread parameters
 	for (int m = 0; m < NUM_OF_FILES; m++) {
 		thread_params[m] = (READ_FILE_ARG *)malloc(sizeof(READ_FILE_ARG));
 		if (NULL == thread_params[m])
@@ -24,60 +27,91 @@ int main(int argc, char *argv[]) {
 			printf("Error when allocating memory");
 			return;
 		}
-		strcpy_s(thread_params[m]->id, ID_LENGTH, argv[1]);
+		GetIdFromPath(thread_params[m]->id, argv[1]);
 	}
 	
-
-	//strcpy_s(thread_params->id, ID_LENGTH, argv[1]);
-
+	
+	//create path and create thread
 	for (int i = 0; i < NUM_OF_FILES; i++) {
-		
+		char full_file_name[PATH_TO_THREAD] = "";
+		strcat_s(full_file_name, sizeof(full_file_name), argv[1]);
+		strcat_s(full_file_name, sizeof(full_file_name), "\\");
+		strcat_s(full_file_name, sizeof(full_file_name), files[i]);
+		strcpy_s(thread_params[i]->file_name, PATH_TO_THREAD, full_file_name);
 		thread_params[i]->grade = &(returned_grades[i]);
-		//thread_params->file_name = files[i];
-		strcpy_s(thread_params[i]->file_name, MAX_FILE_NAME_SIZE, files[i]);
+		
 
 		thread_handles[i] = CreateThreadSimple(ReadFileThread, (thread_params[i]), &(array_thread_ids[i]));
 		if (thread_handles[i] == NULL)//FIX//
 		{
 			printf("Couldn't create thread, error code %d\n", GetLastError());
+			process_exit_code = 1;
 			return;
 		}
 		
+		//put zeros in file name
+		for (int m = 0; m < sizeof(full_file_name); m++) {
+			full_file_name[m] = 0;
+		}
+		
 	}
+
+	//wait for threads to finish
 	wait_code = WaitForMultipleObjects(NUM_OF_FILES, thread_handles, TRUE, INFINITE);
 	if (wait_code == WAIT_TIMEOUT)
 	{
 		printf("Wait Timout \n");
+		process_exit_code = 1;
 		return;
 	}
 	else if(wait_code == WAIT_FAILED)
 	{
 		printf("Wait Failed \n");
+		process_exit_code = 1;
 		return;
 	}
 	else {
-		
+		//Verify exit codes of all threads are fine
+		for (int j = 0; j < NUM_OF_FILES; j++) {
+			GetExitCodeThread(thread_handles[j], exit_code);
+			if (exit_code != 0) {
+				process_exit_code = 1;
+			}
+			*exit_code = 0;
+		}
+		//calc average and write it in file
 		average = calc_average(returned_grades);
-		
-	}
+		final_grade_return = WriteFinalGrade(average);
+		if (final_grade_return != 0) {
+			printf("Error in function open file for final writing");
+			process_exit_code = 1;
+			////
 
+		}
+	}	
+
+	//close handels
 	for (int k = 0; k < NUM_OF_FILES; k++)
 	{
-		retval = CloseHandle(thread_handles[k]);
-		if (0 == retval)
-		{
-			printf("Error when closing\n");
-			return ;
+		if (thread_handles[k] != NULL) {
+			retval = CloseHandle(thread_handles[k]);
+			if (0 == retval)
+			{
+				printf("Error when closing handles\n");
+				process_exit_code = 1;
+				return;
+			}
 		}
+		
 	}
 
-	exit(average);
+	exit(process_exit_code);
 	//return 0;
 }
 
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_thread_parameters, LPDWORD p_thread_id)
 {
-	HANDLE thread_handle;
+	HANDLE thread_handle = NULL;
 	printf("CreateThreadSimple\n");
 
 	if (NULL == p_start_routine)
@@ -109,14 +143,11 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_threa
 void read_from_file(READ_FILE_ARG* struct_arg) {
 	printf("read_from_file\n");
 
-	char full_file_name[500] = "..//Ex2//input//grades_";//change size
 	char char_grade[10];
-	strcat_s(full_file_name, sizeof(full_file_name), struct_arg->id);
-	strcat_s(full_file_name, sizeof(full_file_name), "//");
-	strcat_s(full_file_name, sizeof(full_file_name), struct_arg->file_name);
+	
 
 	FILE * fp = NULL;
-	fopen_s(&fp, full_file_name, "r");
+	fopen_s(&fp, struct_arg->file_name, "r");
 	if (fp == NULL) {
 		printf("Error in open file");
 		return;
@@ -207,4 +238,28 @@ int FindHighestGrades(int grades[]) {
 		}
 	}
 	return max_index;
+}
+int WriteFinalGrade(int average) {
+	char average_c[AVERAGE_SIZE];
+	char final_file_name[FINAL_FILE_SIZE] = "final_";
+	FILE *file_pointer;
+	int return_value = -1;
+
+	sprintf_s(average_c, AVERAGE_SIZE, "%d", average);
+	strcat_s(final_file_name, sizeof(final_file_name), average_c);
+	return_value = fopen_s(&file_pointer, final_file_name, "a");
+
+	if (return_value != 0) {
+		printf("Error in open file for final writing");
+		return 1;
+	}
+	fputs(average_c, file_pointer);
+
+	fclose(file_pointer);
+	return 0;
+}
+void GetIdFromPath(char path[], char id[]) {
+	for (int i = 0; i < ID_LENGTH - 1; i++) {
+		id[i] = path[sizeof(path) - i];///////
+	}
 }

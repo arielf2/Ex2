@@ -16,6 +16,10 @@
 #define MOED_A 11
 #define MOED_B 12
 #define MIDTERM	10
+#define PATH_TO_THREAD 38
+#define AVERAGE_SIZE 4
+#define FINAL_FILE_SIZE 19
+#define ERROR_MESSAGE_SIZE 47
 /*
 * A type for thread return codes
 */
@@ -38,3 +42,6 @@ void read_from_file(READ_FILE_ARG* struct_arg);
 DWORD WINAPI ReadFileThread(LPVOID lpParam);
 int calc_average(int grades[]);
 int FindHighestGrades(int grades[]);
+int WriteFinalGrade(int average);
+void GetIdFromPath(char path[], char id[]);
+
