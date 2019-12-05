@@ -17,8 +17,11 @@ int main(int argc, char *argv[]) {
 	int final_grade_return = -1;
 	char id[ID_LENGTH] = "";
 	DWORD process_exit_code = 0;
-	LPDWORD exit_code;
+	//char try1[100] = "..\\Ex2\\input\\grades_234567890";
 
+
+	printf("%s", argv[1]);
+	GetIdFromPath(argv[1], id);//////FIX
 	//allocate and create thread parameters
 	for (int m = 0; m < NUM_OF_FILES; m++) {
 		thread_params[m] = (READ_FILE_ARG *)malloc(sizeof(READ_FILE_ARG));
@@ -27,14 +30,15 @@ int main(int argc, char *argv[]) {
 			printf("Error when allocating memory");
 			return;
 		}
-		GetIdFromPath(thread_params[m]->id, argv[1]);
+		strcpy_s(thread_params[m]->id, ID_LENGTH, id);
+
 	}
 	
 	
 	//create path and create thread
 	for (int i = 0; i < NUM_OF_FILES; i++) {
 		char full_file_name[PATH_TO_THREAD] = "";
-		strcat_s(full_file_name, sizeof(full_file_name), argv[1]);
+		strcat_s(full_file_name, sizeof(full_file_name), argv[1]);//////FIX
 		strcat_s(full_file_name, sizeof(full_file_name), "\\");
 		strcat_s(full_file_name, sizeof(full_file_name), files[i]);
 		strcpy_s(thread_params[i]->file_name, PATH_TO_THREAD, full_file_name);
@@ -72,16 +76,16 @@ int main(int argc, char *argv[]) {
 	}
 	else {
 		//Verify exit codes of all threads are fine
+		LPDWORD lpExitCode;
 		for (int j = 0; j < NUM_OF_FILES; j++) {
-			GetExitCodeThread(thread_handles[j], exit_code);
-			if (exit_code != 0) {
+			GetExitCodeThread(thread_handles[j], &lpExitCode);
+			if (lpExitCode != 0) {
 				process_exit_code = 1;
 			}
-			*exit_code = 0;
 		}
 		//calc average and write it in file
 		average = calc_average(returned_grades);
-		final_grade_return = WriteFinalGrade(average);
+		final_grade_return = WriteFinalGrade(average, id, argv[1]);
 		if (final_grade_return != 0) {
 			printf("Error in function open file for final writing");
 			process_exit_code = 1;
@@ -239,15 +243,18 @@ int FindHighestGrades(int grades[]) {
 	}
 	return max_index;
 }
-int WriteFinalGrade(int average) {
+int WriteFinalGrade(int average, char id[], char path[]) {
 	char average_c[AVERAGE_SIZE];
-	char final_file_name[FINAL_FILE_SIZE] = "final_";
+	char final_file_name[FINAL_FILE_SIZE] = "";
 	FILE *file_pointer;
 	int return_value = -1;
 
 	sprintf_s(average_c, AVERAGE_SIZE, "%d", average);
-	strcat_s(final_file_name, sizeof(final_file_name), average_c);
-	return_value = fopen_s(&file_pointer, final_file_name, "a");
+	strcat_s(final_file_name, sizeof(final_file_name), path);
+	strcat_s(final_file_name, sizeof(final_file_name), "\\final_");
+	strcat_s(final_file_name, sizeof(final_file_name), id);
+	strcat_s(final_file_name, sizeof(final_file_name), ".txt");
+	return_value = fopen_s(&file_pointer, final_file_name, "w");
 
 	if (return_value != 0) {
 		printf("Error in open file for final writing");
@@ -259,7 +266,10 @@ int WriteFinalGrade(int average) {
 	return 0;
 }
 void GetIdFromPath(char path[], char id[]) {
+	int size = strlen(path);
 	for (int i = 0; i < ID_LENGTH - 1; i++) {
-		id[i] = path[sizeof(path) - i];///////
+		printf("start %c\n", path[i]);
+		printf("end %c\n", path[size - ID_LENGTH + 1+ i]);
+		id[i] = path[size - ID_LENGTH + 1+ i];///////
 	}
 }

@@ -16,9 +16,9 @@
 #define MOED_A 11
 #define MOED_B 12
 #define MIDTERM	10
-#define PATH_TO_THREAD 38
+#define PATH_TO_THREAD 36 //FIX//
 #define AVERAGE_SIZE 4
-#define FINAL_FILE_SIZE 19
+#define FINAL_FILE_SIZE 80///
 #define ERROR_MESSAGE_SIZE 47
 /*
 * A type for thread return codes
@@ -33,7 +33,7 @@ typedef enum
 typedef struct _READ_FILE_ARG {
 	char id[ID_LENGTH];
 	int* grade;
-	char file_name[MAX_FILE_NAME_SIZE];
+	char file_name[PATH_TO_THREAD];
 } READ_FILE_ARG;
 
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_thread_parameters, LPDWORD p_thread_id);
@@ -42,6 +42,6 @@ void read_from_file(READ_FILE_ARG* struct_arg);
 DWORD WINAPI ReadFileThread(LPVOID lpParam);
 int calc_average(int grades[]);
 int FindHighestGrades(int grades[]);
-int WriteFinalGrade(int average);
+int WriteFinalGrade(int average, char id[], char path[]);
 void GetIdFromPath(char path[], char id[]);
 
