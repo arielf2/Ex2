@@ -20,7 +20,6 @@ int main(int argc, char *argv[]) {
 	//char try1[100] = "..\\Ex2\\input\\grades_234567890";
 
 
-	printf("%s", argv[1]);
 	GetIdFromPath(argv[1], id);//////FIX
 	//allocate and create thread parameters
 	for (int m = 0; m < NUM_OF_FILES; m++) {
@@ -37,11 +36,7 @@ int main(int argc, char *argv[]) {
 	
 	//create path and create thread
 	for (int i = 0; i < NUM_OF_FILES; i++) {
-		char full_file_name[PATH_TO_THREAD] = "";
-		strcat_s(full_file_name, sizeof(full_file_name), argv[1]);//////FIX
-		strcat_s(full_file_name, sizeof(full_file_name), "\\");
-		strcat_s(full_file_name, sizeof(full_file_name), files[i]);
-		strcpy_s(thread_params[i]->file_name, PATH_TO_THREAD, full_file_name);
+		CreatePath(argv[1], files[i], thread_params[i]->file_name);
 		thread_params[i]->grade = &(returned_grades[i]);
 		
 
@@ -53,10 +48,7 @@ int main(int argc, char *argv[]) {
 			return;
 		}
 		
-		//put zeros in file name
-		for (int m = 0; m < sizeof(full_file_name); m++) {
-			full_file_name[m] = 0;
-		}
+		
 		
 	}
 
@@ -109,6 +101,12 @@ int main(int argc, char *argv[]) {
 		
 	}
 
+	//close mallocs
+	for (int m = 0; m < NUM_OF_FILES; m++) {
+		if (thread_params[m] != NULL) {
+			free(thread_params[m]);
+		}
+	}
 	exit(process_exit_code);
 	//return 0;
 }
@@ -145,12 +143,10 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_threa
 
 
 void read_from_file(READ_FILE_ARG* struct_arg) {
-	printf("read_from_file\n");
-
 	char char_grade[10];
-	
-
 	FILE * fp = NULL;
+
+	Sleep(10);
 	fopen_s(&fp, struct_arg->file_name, "r");
 	if (fp == NULL) {
 		printf("Error in open file");
@@ -268,8 +264,14 @@ int WriteFinalGrade(int average, char id[], char path[]) {
 void GetIdFromPath(char path[], char id[]) {
 	int size = strlen(path);
 	for (int i = 0; i < ID_LENGTH - 1; i++) {
-		printf("start %c\n", path[i]);
-		printf("end %c\n", path[size - ID_LENGTH + 1+ i]);
-		id[i] = path[size - ID_LENGTH + 1+ i];///////
+		id[i] = path[size - ID_LENGTH + 1+ i];
 	}
+}
+
+CreatePath(char path_from_CL[], char file_name[], char path_in_struct[]) {
+	char full_file_name[PATH_TO_THREAD] = "";
+	strcat_s(full_file_name, sizeof(full_file_name), path_from_CL);//////FIX
+	strcat_s(full_file_name, sizeof(full_file_name), "\\");
+	strcat_s(full_file_name, sizeof(full_file_name), file_name);
+	strcpy_s(path_in_struct, PATH_TO_THREAD, full_file_name);
 }
