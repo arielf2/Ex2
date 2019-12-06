@@ -24,16 +24,6 @@
 #define PATH_FROM_CL  24
 
 
-/*
-* A type for thread return codes
-*/
-typedef enum
-{
-	MATH_THREAD__CODE_SUCCESS,
-	MATH_THREAD__CODE_NULL_PTR,
-} MATH_THREAD__return_code_t;
-
-
 typedef struct _READ_FILE_ARG {
 	char id[ID_LENGTH];
 	float* grade;
@@ -42,7 +32,7 @@ typedef struct _READ_FILE_ARG {
 
 
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_thread_parameters, LPDWORD p_thread_id);
-void read_from_file(READ_FILE_ARG* struct_arg);
+int read_from_file(READ_FILE_ARG* struct_arg);
 DWORD WINAPI ReadFileThread(LPVOID lpParam);
 int calc_average(float grades[]);
 float FindHighestGrades(float grades[]);

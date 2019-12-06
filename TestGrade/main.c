@@ -19,10 +19,8 @@ int main(int argc, char *argv[]) {
 	DWORD process_exit_code = 0;
 
 
-	GetIdFromPath(argv[1], id);//////FIX
-	
-	
-	
+	GetIdFromPath(argv[1], id);
+		
 	for (int i = 0; i < NUM_OF_FILES; i++) {
 
 		//create parameters for threads
@@ -30,20 +28,22 @@ int main(int argc, char *argv[]) {
 		if (NULL == thread_params[i])
 		{
 			printf("Error when allocating memory");
-			return;
+			process_exit_code = -1;
 		}
-
-		CreatePath(argv[1], files[i], thread_params[i]->file_name);
-		thread_params[i]->grade = &(returned_grades[i]);
-		strcpy_s(thread_params[i]->id, ID_LENGTH, id);
+		if (process_exit_code == 0) {
+			CreatePath(argv[1], files[i], thread_params[i]->file_name);
+			thread_params[i]->grade = &(returned_grades[i]);
+			strcpy_s(thread_params[i]->id, ID_LENGTH, id);
 		
-		//create threads for each file in grades
-				thread_handles[i] = CreateThreadSimple(ReadFileThread, (thread_params[i]), &(array_thread_ids[i]));
-		if (thread_handles[i] == NULL)//FIX//
-		{
-			printf("Couldn't create thread, error code %d\n", GetLastError());
-			process_exit_code = 1;
-			return;
+			//create threads for each file in grades
+			//initialize handle to NULL
+			thread_handles[i] = NULL;
+			thread_handles[i] = CreateThreadSimple(ReadFileThread, (thread_params[i]), &(array_thread_ids[i]));
+			if (thread_handles[i] == NULL)//FIX//
+			{
+				printf("Couldn't create thread, error code %d\n", GetLastError());
+				process_exit_code = -1;
+			}
 		}
 	}
 
@@ -52,14 +52,13 @@ int main(int argc, char *argv[]) {
 	if (wait_code == WAIT_TIMEOUT)
 	{
 		printf("Wait Timout \n");
-		process_exit_code = 1;
-		return;
+		process_exit_code = -1;
+			
 	}
 	else if(wait_code == WAIT_FAILED)
 	{
 		printf("Wait Failed \n");
-		process_exit_code = 1;
-		return;
+		process_exit_code = -1;
 	}
 	else {
 		//Verify exit codes of all threads are fine
@@ -67,23 +66,26 @@ int main(int argc, char *argv[]) {
 		for (int j = 0; j < NUM_OF_FILES; j++) {
 			GetExitCodeThread(thread_handles[j], &lpExitCode);
 			if (lpExitCode != 0) {
-				process_exit_code = 1;
+				process_exit_code = -1;
 			}
 		}
-		//calc average and write it in file
-		average = calc_average(returned_grades);
-		final_grade_return = WriteFinalGrade(average, id, argv[1]);
-		if (final_grade_return != 0) {
-			printf("Error in function open file for final writing");
-			process_exit_code = 1;
-			////
-
+		if (process_exit_code == 0) {
+			//calc average and write it in file
+			average = calc_average(returned_grades);
+			final_grade_return = WriteFinalGrade(average, id, argv[1]);
+			if (final_grade_return != 0) {
+				printf("Error in function open file for final writing");
+				process_exit_code = -1;
+			}
 		}
 	}	
 
 	process_exit_code = CloseHandles(thread_handles);
 	CloseMallocs(thread_params);
 	
+	if (process_exit_code == 0) {
+		process_exit_code = average;
+	}
 	exit(process_exit_code);
 }
 
@@ -91,7 +93,6 @@ int main(int argc, char *argv[]) {
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_thread_parameters, LPDWORD p_thread_id)
 {
 	HANDLE thread_handle = NULL;
-	printf("CreateThreadSimple\n");
 
 	if (NULL == p_start_routine)
 	{
@@ -118,7 +119,7 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_threa
 	return thread_handle;
 }
 
-void read_from_file(READ_FILE_ARG* struct_arg) {
+int read_from_file(READ_FILE_ARG* struct_arg) {
 	char char_grade[10];
 	FILE * fp = NULL;
 
@@ -126,7 +127,7 @@ void read_from_file(READ_FILE_ARG* struct_arg) {
 	fopen_s(&fp, struct_arg->file_name, "r");
 	if (fp == NULL) {
 		printf("Error in open file");
-		return;
+		return -1;
 	}
 	fgets(char_grade, LINE_IN_FILE_LENGTH, fp);
 	*(struct_arg->grade) = atoi(char_grade);
@@ -137,12 +138,12 @@ void read_from_file(READ_FILE_ARG* struct_arg) {
 DWORD WINAPI ReadFileThread(LPVOID lpParam)
 {
 	READ_FILE_ARG *thread_params;
-	printf("ReadFileThread\n");
+	int return_val = 0;
 
 	/* Check if lpParam is NULL */
 	if (NULL == lpParam)
 	{
-		return MATH_THREAD__CODE_NULL_PTR;
+		return -1;
 	}
 
 	/*
@@ -150,9 +151,9 @@ DWORD WINAPI ReadFileThread(LPVOID lpParam)
 	*/
 	thread_params = (READ_FILE_ARG*)lpParam;
 
-	read_from_file(thread_params);
+	return_val = read_from_file(thread_params);
 
-	return MATH_THREAD__CODE_SUCCESS;
+	return return_val;
 }
 
 int calc_average(float grades[]) {
@@ -162,7 +163,12 @@ int calc_average(float grades[]) {
 	float grades_sum = 0;
 	float highest_grades[HIGHEST_EXERCISES_GRADE] = { 0 };//
 	float exercise_average = 0;
+	int did_moed_b = 0;
 
+	//mark if student did moed B
+	if (grades[MOED_B] != 0) {
+		did_moed_b = 1;
+	}
 	//change grades under 60 to 0 for calculation
 	for (int i = 0; i < NUM_OF_FILES; i++) {
 		if (grades[i] < 60) {
@@ -194,11 +200,11 @@ int calc_average(float grades[]) {
 	average += 0.2*grades[MIDTERM];
 
 	//add final exam value
-	if (grades[MOED_B] == 0) {
-		average += 0.6*grades[MOED_A];
+	if (did_moed_b == 1) {
+		average += 0.6*grades[MOED_B];
 	}
 	else {
-		average += 0.6*grades[MOED_B];
+		average += 0.6*grades[MOED_A];
 	}
 	return ceil(average);
 }
@@ -256,6 +262,7 @@ CreatePath(char path_from_CL[], char file_name[], char path_in_struct[]) {
 int CloseHandles(HANDLE thread_handles[]) {
 	//close handels
 	int retval;
+	int func_retval = 0;
 	for (int k = 0; k < NUM_OF_FILES; k++)
 	{
 		if (thread_handles[k] != NULL) {
@@ -263,12 +270,15 @@ int CloseHandles(HANDLE thread_handles[]) {
 			if (0 == retval)
 			{
 				printf("Error when closing handles\n");
-				return 1;
+				func_retval = -1;
 			}
+		}
+		else {
+			func_retval = -1;
 		}
 
 	}
-	return 0;
+	return func_retval;
 }
 
 void CloseMallocs(READ_FILE_ARG* thread_params[]) {
