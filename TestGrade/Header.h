@@ -41,3 +41,5 @@ void GetIdFromPath(char path[], char id[]);
 CreatePath(char path_from_CL[], char file_name[], char path_in_struct[]);
 void CloseMallocs(READ_FILE_ARG* thread_params[]);
 int CloseHandles(HANDLE thread_handles[]);
+int CheckWaitCodes(int waitcode);
+

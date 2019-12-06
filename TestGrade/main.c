@@ -49,18 +49,8 @@ int main(int argc, char *argv[]) {
 
 	//wait for threads to finish
 	wait_code = WaitForMultipleObjects(NUM_OF_FILES, thread_handles, TRUE, INFINITE);
-	if (wait_code == WAIT_TIMEOUT)
-	{
-		printf("Wait Timout \n");
-		process_exit_code = -1;
-			
-	}
-	else if(wait_code == WAIT_FAILED)
-	{
-		printf("Wait Failed \n");
-		process_exit_code = -1;
-	}
-	else {
+	process_exit_code = CheckWaitCodes(wait_code);
+	if (process_exit_code == 0) {
 		//Verify exit codes of all threads are fine
 		LPDWORD lpExitCode;
 		for (int j = 0; j < NUM_OF_FILES; j++) {
@@ -288,4 +278,21 @@ void CloseMallocs(READ_FILE_ARG* thread_params[]) {
 			free(thread_params[m]);
 		}
 	}
+}
+
+int CheckWaitCodes(int waitcode) {
+	int err = 0;
+	if (waitcode == WAIT_FAILED) {
+		printf("WaitForMultipleObjects returned WAIT_FAILED\n");
+		err = 1;
+	}
+	else if (waitcode == WAIT_TIMEOUT) {
+		printf("WaitForMultipleObjects returned WAIT_TIMEOUT\n");
+		err = 1;
+	}
+	else if (waitcode == WAIT_ABANDONED) { // check if necessary
+		printf("WaitForMultipleObjects returned WAIT_ABANDONED\n");
+		err = 1;
+	}
+	return err;
 }
