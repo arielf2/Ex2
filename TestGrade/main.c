@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
 	DWORD array_thread_ids[NUM_OF_FILES];
 	HANDLE thread_handles[NUM_OF_FILES];
 	DWORD  exitcode_array[NUM_OF_FILES];
-	int returned_grades[NUM_OF_FILES];
+	float returned_grades[NUM_OF_FILES];
 	READ_FILE_ARG* thread_params[NUM_OF_FILES];
 	DWORD wait_code;
 	int average = 0;
@@ -17,39 +17,34 @@ int main(int argc, char *argv[]) {
 	int final_grade_return = -1;
 	char id[ID_LENGTH] = "";
 	DWORD process_exit_code = 0;
-	//char try1[100] = "..\\Ex2\\input\\grades_234567890";
 
 
 	GetIdFromPath(argv[1], id);//////FIX
-	//allocate and create thread parameters
-	for (int m = 0; m < NUM_OF_FILES; m++) {
-		thread_params[m] = (READ_FILE_ARG *)malloc(sizeof(READ_FILE_ARG));
-		if (NULL == thread_params[m])
+	
+	
+	
+	for (int i = 0; i < NUM_OF_FILES; i++) {
+
+		//create parameters for threads
+		thread_params[i] = (READ_FILE_ARG *)malloc(sizeof(READ_FILE_ARG));
+		if (NULL == thread_params[i])
 		{
 			printf("Error when allocating memory");
 			return;
 		}
-		strcpy_s(thread_params[m]->id, ID_LENGTH, id);
 
-	}
-	
-	
-	//create path and create thread
-	for (int i = 0; i < NUM_OF_FILES; i++) {
 		CreatePath(argv[1], files[i], thread_params[i]->file_name);
 		thread_params[i]->grade = &(returned_grades[i]);
+		strcpy_s(thread_params[i]->id, ID_LENGTH, id);
 		
-
-		thread_handles[i] = CreateThreadSimple(ReadFileThread, (thread_params[i]), &(array_thread_ids[i]));
+		//create threads for each file in grades
+				thread_handles[i] = CreateThreadSimple(ReadFileThread, (thread_params[i]), &(array_thread_ids[i]));
 		if (thread_handles[i] == NULL)//FIX//
 		{
 			printf("Couldn't create thread, error code %d\n", GetLastError());
 			process_exit_code = 1;
 			return;
 		}
-		
-		
-		
 	}
 
 	//wait for threads to finish
@@ -86,30 +81,12 @@ int main(int argc, char *argv[]) {
 		}
 	}	
 
-	//close handels
-	for (int k = 0; k < NUM_OF_FILES; k++)
-	{
-		if (thread_handles[k] != NULL) {
-			retval = CloseHandle(thread_handles[k]);
-			if (0 == retval)
-			{
-				printf("Error when closing handles\n");
-				process_exit_code = 1;
-				return;
-			}
-		}
-		
-	}
-
-	//close mallocs
-	for (int m = 0; m < NUM_OF_FILES; m++) {
-		if (thread_params[m] != NULL) {
-			free(thread_params[m]);
-		}
-	}
+	process_exit_code = CloseHandles(thread_handles);
+	CloseMallocs(thread_params);
+	
 	exit(process_exit_code);
-	//return 0;
 }
+
 
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_thread_parameters, LPDWORD p_thread_id)
 {
@@ -140,7 +117,6 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_threa
 
 	return thread_handle;
 }
-
 
 void read_from_file(READ_FILE_ARG* struct_arg) {
 	char char_grade[10];
@@ -179,14 +155,13 @@ DWORD WINAPI ReadFileThread(LPVOID lpParam)
 	return MATH_THREAD__CODE_SUCCESS;
 }
 
-
-int calc_average(int grades[]) {
+int calc_average(float grades[]) {
 	//add exercises value
 	int max_index = -1;
-	int average = 0;
-	int grades_sum = 0;
-	int highest_grades[HIGHEST_EXERCISES_GRADE] = { 0 };//
-	int exercise_average = 0;
+	float average = 0;
+	float grades_sum = 0;
+	float highest_grades[HIGHEST_EXERCISES_GRADE] = { 0 };//
+	float exercise_average = 0;
 
 	//change grades under 60 to 0 for calculation
 	for (int i = 0; i < NUM_OF_FILES; i++) {
@@ -220,15 +195,15 @@ int calc_average(int grades[]) {
 
 	//add final exam value
 	if (grades[MOED_B] == 0) {
-		average += 0.6*grades[MOED_A];//צריך לבדוק אם המועד א הוא 0 כדי להגיד ציון נכשל סופי?
+		average += 0.6*grades[MOED_A];
 	}
 	else {
 		average += 0.6*grades[MOED_B];
 	}
-	return average;
+	return ceil(average);
 }
 
-int FindHighestGrades(int grades[]) {
+float FindHighestGrades(float grades[]) {
 	int max = -1;
 	int max_index = -1;
 	for (int i = 0; i < NUM_OF_EXERCISES; i++) {
@@ -239,6 +214,7 @@ int FindHighestGrades(int grades[]) {
 	}
 	return max_index;
 }
+
 int WriteFinalGrade(int average, char id[], char path[]) {
 	char average_c[AVERAGE_SIZE];
 	char final_file_name[FINAL_FILE_SIZE] = "";
@@ -261,6 +237,7 @@ int WriteFinalGrade(int average, char id[], char path[]) {
 	fclose(file_pointer);
 	return 0;
 }
+
 void GetIdFromPath(char path[], char id[]) {
 	int size = strlen(path);
 	for (int i = 0; i < ID_LENGTH - 1; i++) {
@@ -274,4 +251,31 @@ CreatePath(char path_from_CL[], char file_name[], char path_in_struct[]) {
 	strcat_s(full_file_name, sizeof(full_file_name), "\\");
 	strcat_s(full_file_name, sizeof(full_file_name), file_name);
 	strcpy_s(path_in_struct, PATH_TO_THREAD, full_file_name);
+}
+
+int CloseHandles(HANDLE thread_handles[]) {
+	//close handels
+	int retval;
+	for (int k = 0; k < NUM_OF_FILES; k++)
+	{
+		if (thread_handles[k] != NULL) {
+			retval = CloseHandle(thread_handles[k]);
+			if (0 == retval)
+			{
+				printf("Error when closing handles\n");
+				return 1;
+			}
+		}
+
+	}
+	return 0;
+}
+
+void CloseMallocs(READ_FILE_ARG* thread_params[]) {
+	//close mallocs
+	for (int m = 0; m < NUM_OF_FILES; m++) {
+		if (thread_params[m] != NULL) {
+			free(thread_params[m]);
+		}
+	}
 }

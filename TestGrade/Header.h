@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define MAX_FILE_NAME_SIZE 12
 #define NUM_OF_FILES 13
@@ -20,6 +21,9 @@
 #define AVERAGE_SIZE 4
 #define FINAL_FILE_SIZE 80///
 #define ERROR_MESSAGE_SIZE 47
+#define PATH_FROM_CL  24
+
+
 /*
 * A type for thread return codes
 */
@@ -32,16 +36,18 @@ typedef enum
 
 typedef struct _READ_FILE_ARG {
 	char id[ID_LENGTH];
-	int* grade;
+	float* grade;
 	char file_name[PATH_TO_THREAD];
 } READ_FILE_ARG;
 
-HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_thread_parameters, LPDWORD p_thread_id);
 
+HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_thread_parameters, LPDWORD p_thread_id);
 void read_from_file(READ_FILE_ARG* struct_arg);
 DWORD WINAPI ReadFileThread(LPVOID lpParam);
-int calc_average(int grades[]);
-int FindHighestGrades(int grades[]);
+int calc_average(float grades[]);
+float FindHighestGrades(float grades[]);
 int WriteFinalGrade(int average, char id[], char path[]);
 void GetIdFromPath(char path[], char id[]);
-
+CreatePath(char path_from_CL[], char file_name[], char path_in_struct[]);
+void CloseMallocs(READ_FILE_ARG* thread_params[]);
+int CloseHandles(HANDLE thread_handles[]);
