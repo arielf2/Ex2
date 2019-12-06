@@ -1,4 +1,11 @@
-#include "Header.h"
+/* Authors: Rotem Hecht 311143044
+			Ariel Felberg 308425974
+   Project: ISP Exercise 2
+   Description: The TestGrade program goes over the different exercises/exam files, each in a different thread,
+				then computes the average grade of the student
+*/
+
+#include "TestGradeFuncsAndDefs.h"
 
 
 int main(int argc, char *argv[]) {
@@ -17,7 +24,6 @@ int main(int argc, char *argv[]) {
 	int final_grade_return = -1;
 	char id[ID_LENGTH] = "";
 	DWORD process_exit_code = 0;
-
 
 	GetIdFromPath(argv[1], id);
 		

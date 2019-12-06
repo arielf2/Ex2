@@ -1,3 +1,11 @@
+/* Authors: Rotem Hecht 311143044
+			Ariel Felberg 308425974
+   Project: ISP Exercise 2
+   Description: The TestManager program that goes over student ids, creates a process for each student. 
+				In each process (instance of the TestGrade program) the student's grade are calculated
+				in a multi-threading manner. Then TestManager summarizes the result in a final output file.
+*/
+
 #include "TestManagerFuncsAndDefs.h"
 
 int main(int argc, char *argv[])
@@ -47,6 +55,7 @@ int main(int argc, char *argv[])
 	/* wait for all processes to finish (if there are no errors)  */
 	if (!error_flag) { // if we're here all the processes were created successfully and their number is proc_count
 		waitcode = WaitForMultipleObjects(proc_count, p_process_handles, TRUE, TIMEOUT);
+		error_flag = CheckWaitCodes(waitcode);
 	}
 	
 	/* get ExitCodes (calculated average) from each process (student) if there are no errors */
@@ -65,20 +74,19 @@ int main(int argc, char *argv[])
 	if (!error_flag) {
 		printf("The grades have arrived, captain\n");
 		strcat_s(OutputFileRelativePath, sizeof(OutputFileRelativePath), argv[1]);
-		WriteFinalGrades(student_array, proc_count, OutputFileRelativePath, argv[1]);
+		error_flag = WriteFinalGrades(student_array, proc_count, OutputFileRelativePath);
 	}
 
 	/* close handles */
 	for (k = 0; k < proc_count; k++) {
-		CloseHandle(p_process_handles[k]);
+		if (p_process_handles[k] != NULL)
+			CloseHandle(p_process_handles[k]);
 	}
 
 	return error_flag;
 }
 
-
-
-int WriteFinalGrades(STUDENT_INFO *StudArray, int NumOfStudents, char* OutputFile, char* GradesDir) {
+int WriteFinalGrades(STUDENT_INFO *StudArray, int NumOfStudents, char* OutputFile) {
 	int file_error, j;
 	FILE *fp = NULL;
 	strcat_s(OutputFile, MAX_OUTPUT_FILE_LEN , OUTPUT_GRADE_FILE);
@@ -91,6 +99,7 @@ int WriteFinalGrades(STUDENT_INFO *StudArray, int NumOfStudents, char* OutputFil
 		fprintf(fp, "%s %d\n", StudArray[j].id, StudArray[j].grade);
 	}
 	fclose(fp);
+	return 0;
 }
 
 int CheckWaitCodes(int waitcode) {
