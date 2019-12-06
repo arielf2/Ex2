@@ -180,7 +180,7 @@ int calc_average(float grades[]) {
 		max_index = FindHighestGrades(grades);
 		if (max_index == -1) {
 			printf("Error while getting highest grade\n");
-			return;
+			return -1;
 		}
 		highest_grades[j] = grades[max_index];
 		grades[max_index] = -1;
