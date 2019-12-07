@@ -115,10 +115,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Computations.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="StringAndFileFuncs.c" />
+    <ClCompile Include="ThreadFuncs.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TestGradeFuncsAndDefs.h" />
+    <ClInclude Include="Computations.h" />
+    <ClInclude Include="StringAndFileFuncs.h" />
+    <ClInclude Include="ThreadFuncs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

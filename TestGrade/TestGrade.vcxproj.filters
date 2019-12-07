@@ -18,9 +18,24 @@
     <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Computations.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadFuncs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringAndFileFuncs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TestGradeFuncsAndDefs.h">
+    <ClInclude Include="Computations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadFuncs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StringAndFileFuncs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
