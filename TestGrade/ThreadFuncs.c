@@ -34,10 +34,10 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE p_start_routine, LPVOID p_threa
 int read_from_file(READ_FILE_ARG* struct_arg) {
 	char char_grade[10];
 	FILE * fp = NULL;
-
+	int file_error = 0;
 	Sleep(10);
-	fopen_s(&fp, struct_arg->file_name, "r");
-	if (fp == NULL) {
+	file_error = fopen_s(&fp, struct_arg->file_name, "r");
+	if (file_error != 0) {
 		printf("Error in open file");
 		return -1;
 	}
@@ -45,6 +45,7 @@ int read_from_file(READ_FILE_ARG* struct_arg) {
 	*(struct_arg->grade) = atoi(char_grade);
 	fclose(fp);
 
+	return 0;
 
 }
 

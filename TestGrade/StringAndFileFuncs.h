@@ -10,7 +10,7 @@
 
 #define MAX_FILE_NAME_SIZE 12
 #define AVERAGE_SIZE 4
-#define FINAL_FILE_SIZE 80
+#define FINAL_FILE_SIZE 46
 #define ID_LENGTH 10
 #define PATH_TO_THREAD 36
 
