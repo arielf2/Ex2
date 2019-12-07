@@ -11,13 +11,10 @@
 #define MAX_NUM_OF_STUDENTS 10
 #define ID_LENGTH 10
 #define TIMEOUT 5000
-#define COMMAND_LINE_LEN 70
-#define MAX_RELATIVE_PATH_LEN 100 //input(5) + space(1) + id(9)
-#define MAX_OUTPUT_FILE_LEN 100
+#define COMMAND_LINE_LEN 44
+#define MAX_RELATIVE_PATH_LEN 30
+#define MAX_OUTPUT_FILE_LEN 30
 #define STUDENT_FILE "//student_ids.txt"
-/* Remove in the end and change in main */
-#define GOVER_STUDENT_FILE "//studentIds.txt" 
-/* Remove in the end and change in main*/
 #define OUTPUT_GRADE_FILE "//final_grades.txt"
 #define TEST_GRADE_PROG "TestGrade.exe "
 #define GRADES_DIR "//grades_"

@@ -101,10 +101,6 @@ int CheckWaitCodes(int waitcode) {
 		printf("WaitForMultipleObjects returned WAIT_TIMEOUT\n");
 		err = 1;
 	}
-	else if (waitcode == WAIT_ABANDONED) { // check if necessary
-		printf("WaitForMultipleObjects returned WAIT_ABANDONED\n");
-		err = 1;
-	}
 	return err;
 }
 

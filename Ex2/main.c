@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 	int proc_count = 0, file_error = 0, error_flag = 0, k = 0;
 
 	strcat_s(StudentFileRelativePath, sizeof(StudentFileRelativePath), argv[1]); // input
-	strcat_s(StudentFileRelativePath, sizeof(StudentFileRelativePath), GOVER_STUDENT_FILE); //input//student_ids.txt
+	strcat_s(StudentFileRelativePath, sizeof(StudentFileRelativePath), STUDENT_FILE); //input//student_ids.txt
 
 	file_error = fopen_s(&fp, StudentFileRelativePath, "r");
 	if (file_error != 0) {
@@ -110,10 +110,6 @@ int CheckWaitCodes(int waitcode) {
 	}
 	else if (waitcode == WAIT_TIMEOUT) {
 		printf("WaitForMultipleObjects returned WAIT_TIMEOUT\n");
-		err = 1;
-	}
-	else if (waitcode == WAIT_ABANDONED) {
-		printf("WaitForMultipleObjects returned WAIT_ABANDONED\n");
 		err = 1;
 	}
 	return err;
